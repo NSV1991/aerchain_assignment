@@ -80,10 +80,29 @@ export const AddTrip = () => {
 
     const handleClose = () => {
         setIsOpen(false);
+        setFormValues({
+            tripId: '',
+            source: '',
+            phone: '',
+            transporter: '',
+            destination: '',
+        });
+        setFormErrors({
+            tripId: false,
+            source: false,
+            phone: false,
+            transporter: false,
+            destination: false,
+        });
     };
 
     const handleModalOpen = () => {
         setIsOpen(true);
+    };
+
+    const validatePhone = (phone: string) => {
+        const phoneRegex = /^[0-9]{10}$/; // Simple regex for 10-digit phone numbers
+        return phoneRegex.test(phone);
     };
 
     const handleAddTrip = () => {
@@ -138,6 +157,20 @@ export const AddTrip = () => {
             ...formValues,
             [name]: value,
         });
+
+        if (name === 'phone') {
+            if (!validatePhone(value)) {
+                setFormErrors({
+                    ...formErrors,
+                    phone: true,
+                });
+            } else {
+                setFormErrors({
+                    ...formErrors,
+                    phone: false,
+                });
+            }
+        }
     };
 
     return (
@@ -226,7 +259,9 @@ export const AddTrip = () => {
                                 onChange={handleChange}
                                 error={formErrors.phone}
                                 helperText={
-                                    formErrors.phone ? 'Phone is required' : ''
+                                    formErrors.phone
+                                        ? 'Phone is required and must of 10 digit'
+                                        : ''
                                 }
                             />
                         </div>
