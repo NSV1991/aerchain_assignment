@@ -3,30 +3,18 @@
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { PieChart } from '../PieChart';
-import { Trip } from '@/app/utils/types';
 import { findTATStatus } from '@/app/utils/dataUtils';
-import { useEffect, useState } from 'react';
+import { useAppContext } from '@/app/context/AppContext';
 
 const StyledTypoGraphy = styled(Typography)(({ theme }) => ({
     fontSize: '16px',
     margin: theme.spacing(2),
 }));
 
-type HeaderProps = {
-    trips: Trip[];
-};
-
-export const Header = ({ trips }: HeaderProps) => {
-    // const localData = localStorage.getItem('tripData');
-    // const [trips, setLatestTrips] = useState<Trip[]>(trips);
-    // useEffect(() => {
-    //     if (!localData) {
-    //         localStorage.setItem('tripData', JSON.stringify(trips));
-    //         setLatestTrips(trips);
-    //     } else {
-    //         setLatestTrips(JSON.parse(localData));
-    //     }
-    // }, [localData, trips]);
+export const Header = () => {
+    const {
+        state: { trips },
+    } = useAppContext();
 
     const totalTrips = trips.length;
 

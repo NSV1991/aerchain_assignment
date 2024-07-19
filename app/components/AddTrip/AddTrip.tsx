@@ -19,6 +19,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
 import mockStates from '../../data/mockStates.json';
 import { v4 } from 'uuid';
+import { Trip } from '@/app/utils/types';
+import { useAppContext } from '@/app/context/AppContext';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialogContent-root': {
@@ -58,7 +60,8 @@ export const AddTrip = () => {
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const [isOpen, setIsOpen] = useState(false);
     const [isFormValid, setIsFormValid] = useState(false);
-    const existingTrips = localStorage.getItem('tripData');
+
+    const { addTrip } = useAppContext();
 
     const [formValues, setFormValues] = useState({
         tripId: '',
@@ -94,16 +97,14 @@ export const AddTrip = () => {
         setFormErrors(errors);
 
         if (isFormValid) {
-            let updateData = [];
-            if (existingTrips) updateData = JSON.parse(existingTrips);
-            const newData = {
+            const newTrip = {
                 _id: v4(),
                 tripId: v4(),
                 transporter: formValues.transporter,
-                tripStartTime: new Date(),
+                tripStartTime: new Date().toISOString(),
                 currentStatusCode: 'BKD',
                 currentStatus: 'Booked',
-                phoneNumber: formValues.phone,
+                phoneNumber: Number(formValues.phone),
                 etaDays: 3,
                 distanceRemaining: 321,
                 tripEndTime: '',
@@ -113,11 +114,10 @@ export const AddTrip = () => {
                 dest: formValues.destination,
                 destLatitude: 11.7,
                 destLongitude: 80.9,
-                lastPingTime: new Date(),
-                createdAt: new Date(),
+                lastPingTime: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
             };
-            updateData = [newData, ...updateData];
-            localStorage.setItem('tripData', JSON.stringify(updateData));
+            addTrip(newTrip);
             handleClose();
             // Here you can add logic to handle form submission, such as sending data to a server
         }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import MUITable from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -22,24 +22,12 @@ import {
 } from '@/app/utils/dataUtils';
 import { TableHead } from './TableHead';
 import { Toolbar } from './Toolbar';
+import { useAppContext } from '@/app/context/AppContext';
 
-type TableProps = {
-    trips: Trip[];
-};
-
-export const Table = ({ trips }: TableProps): JSX.Element => {
-    // const localData =
-    //     typeof window !== 'undefined' && localStorage.getItem('tripData');
-
-    // const [latestTrips, setLatestTrips] = useState<Trip[]>(trips);
-    // useEffect(() => {
-    //     if (!localData) {
-    //         localStorage.setItem('tripData', JSON.stringify(trips));
-    //         setLatestTrips(trips);
-    //     } else {
-    //         setLatestTrips(JSON.parse(localData));
-    //     }
-    // }, [window, localData, trips]);
+export const Table = (): JSX.Element => {
+    const {
+        state: { trips },
+    } = useAppContext();
 
     const [order, setOrder] = useState<Order>('asc');
     const [orderBy, setOrderBy] = useState<keyof TripFormattedData>('tripId');
