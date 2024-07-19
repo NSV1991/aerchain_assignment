@@ -1,1 +1,1 @@
-export { EnhancedTable } from './Table';
+export { Table } from './Table';

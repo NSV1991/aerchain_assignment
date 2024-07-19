@@ -30,7 +30,13 @@ const PieCenterLabel = ({ children }: { children: React.ReactNode }) => {
     );
 };
 
-export const PieChart = () => {
+type PieChartProps = {
+    onTimeTrips: number;
+    totalTrips: number;
+};
+
+export const PieChart = ({ onTimeTrips, totalTrips }: PieChartProps) => {
+    const onTimeTripsPercentage = Math.round((onTimeTrips / totalTrips) * 100);
     return (
         <Box
             sx={{
@@ -47,13 +53,13 @@ export const PieChart = () => {
                 }}
                 viewBox={{ x: -50, y: 0, width: 150, height: 150 }}
                 {...size}>
-                <PieCenterLabel>80%</PieCenterLabel>
+                <PieCenterLabel>{onTimeTripsPercentage}%</PieCenterLabel>
             </MUIPieChart>
             <Box>
                 <Typography>
                     Ontime:{' '}
                     <Typography variant='caption' color='#0057D1'>
-                        1,23,3443
+                        {onTimeTrips}
                     </Typography>
                 </Typography>
             </Box>

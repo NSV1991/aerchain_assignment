@@ -3,13 +3,53 @@
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { PieChart } from '../PieChart';
+import { Trip } from '@/app/utils/types';
+import { findTATStatus } from '@/app/utils/dataUtils';
 
 const StyledTypoGraphy = styled(Typography)(({ theme }) => ({
     fontSize: '16px',
     margin: theme.spacing(2),
 }));
 
-export const Header = () => {
+type HeaderProps = {
+    trips: Trip[];
+};
+
+export const Header = ({ trips }: HeaderProps) => {
+    const totalTrips = trips.length;
+
+    const totalDelivered = trips.filter(
+        (trip) => trip.currentStatus === 'Delivered'
+    ).length;
+
+    const totalDeliveredPercentage = Math.round(
+        (totalDelivered / totalTrips) * 100
+    );
+
+    const formattedData = trips.map((data) => ({
+        tripId: data.tripId,
+        transporter: data.transporter,
+        source: data.source,
+        destination: data.dest,
+        phone: data.phoneNumber,
+        eta: data.tripEndTime,
+        distanceRemaining: data.distanceRemaining,
+        tripStatus: data.currentStatus,
+        tatStatus: findTATStatus(data),
+    }));
+
+    const delayCount = formattedData.filter(
+        (trip) => trip.tatStatus === 'Delayed'
+    ).length;
+
+    console.log('delayCount:', delayCount);
+
+    const onTimeCount = formattedData.filter(
+        (trip) => trip.tatStatus === 'On time'
+    ).length;
+
+    const inTransitCount = onTimeCount + delayCount;
+    const inTransitPercentage = Math.round((inTransitCount / totalTrips) * 100);
     return (
         <Box
             sx={{
@@ -35,7 +75,7 @@ export const Header = () => {
                     <StyledTypoGraphy
                         variant='body1'
                         sx={{ fontSize: '24px', fontWeight: '800' }}>
-                        10,883
+                        {totalTrips}
                     </StyledTypoGraphy>
                 </Box>
                 <Box>
@@ -47,7 +87,7 @@ export const Header = () => {
                     <StyledTypoGraphy
                         variant='body1'
                         sx={{ fontSize: '24px', fontWeight: '800' }}>
-                        10,883
+                        {totalDelivered}
                     </StyledTypoGraphy>
                 </Box>
             </Box>
@@ -74,7 +114,10 @@ export const Header = () => {
                         margin: '0 20px',
                         justifyContent: 'space-between',
                     }}>
-                    <PieChart />
+                    <PieChart
+                        onTimeTrips={onTimeCount}
+                        totalTrips={totalTrips}
+                    />
                     <Box>
                         <StyledTypoGraphy
                             variant='subtitle1'
@@ -85,7 +128,7 @@ export const Header = () => {
                             <StyledTypoGraphy
                                 variant='body1'
                                 sx={{ fontWeight: '800' }}>
-                                10,883
+                                {delayCount}
                             </StyledTypoGraphy>
                         </Box>
                     </Box>
@@ -113,10 +156,10 @@ export const Header = () => {
                         <StyledTypoGraphy
                             variant='body1'
                             sx={{ fontWeight: '800' }}>
-                            10,883
+                            {inTransitCount}
                         </StyledTypoGraphy>
                         <Chip
-                            label='72%'
+                            label={`${inTransitPercentage}%`}
                             sx={{
                                 marginLeft: '8px',
                                 background: '#D7E3FE',
@@ -149,10 +192,10 @@ export const Header = () => {
                         <StyledTypoGraphy
                             variant='body1'
                             sx={{ fontWeight: '800' }}>
-                            10,883
+                            {totalDelivered}
                         </StyledTypoGraphy>
                         <Chip
-                            label='72%'
+                            label={`${totalDeliveredPercentage}%`}
                             sx={{
                                 marginLeft: '8px',
                                 background: '#D7E3FE',

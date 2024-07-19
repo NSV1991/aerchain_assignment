@@ -1,292 +1,53 @@
 'use client';
 
 import * as React from 'react';
-import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
+import MUITable from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { visuallyHidden } from '@mui/utils';
-import mock from '../../mockData.json';
-import { Link } from '@mui/material';
-import { AddTrip } from '../AddTrip';
-import { UpdateStatusDialog } from '../UpdateStatusDialog';
+import { Chip, Link } from '@mui/material';
+import { Order, Trip, TripFormattedData } from '@/app/utils/types';
+import {
+    findTATStatus,
+    getComparator,
+    getTATColor,
+    stableSort,
+} from '@/app/utils/dataUtils';
+import { TableHead } from './TableHead';
+import { Toolbar } from './Toolbar';
 
-interface Data {
-    tripId: string;
-    transporter: string;
-    source: string;
-    destination: string;
-    phone: number;
-    eta: string;
-    distanceRemaining: number;
-    tripStatus: string;
-    tatStatus: string;
-}
-
-const rows = mock.data.map((data) => ({
-    tripId: data.tripId,
-    transporter: data.transporter,
-    source: data.source,
-    destination: data.dest,
-    phone: data.phoneNumber,
-    eta: data.tripEndTime,
-    distanceRemaining: data.distanceRemaining,
-    tripStatus: data.currenStatus,
-    tatStatus: 'On time',
-}));
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-    if (b[orderBy] < a[orderBy]) {
-        return -1;
-    }
-    if (b[orderBy] > a[orderBy]) {
-        return 1;
-    }
-    return 0;
-}
-
-type Order = 'asc' | 'desc';
-
-function getComparator<Key extends keyof any>(
-    order: Order,
-    orderBy: Key
-): (
-    a: { [key in Key]: number | string },
-    b: { [key in Key]: number | string }
-) => number {
-    return order === 'desc'
-        ? (a, b) => descendingComparator(a, b, orderBy)
-        : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-// Since 2020 all major browsers ensure sort stability with Array.prototype.sort().
-// stableSort() brings sort stability to non-modern browsers (notably IE11). If you
-// only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
-// with exampleArray.slice().sort(exampleComparator)
-function stableSort<T>(
-    array: readonly T[],
-    comparator: (a: T, b: T) => number
-) {
-    const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-    stabilizedThis.sort((a, b) => {
-        const order = comparator(a[0], b[0]);
-        if (order !== 0) {
-            return order;
-        }
-        return a[1] - b[1];
-    });
-    return stabilizedThis.map((el) => el[0]);
-}
-
-interface HeadCell {
-    disablePadding: boolean;
-    id: keyof Data;
-    label: string;
-    align: 'left' | 'right' | 'center';
-}
-
-const headCells: readonly HeadCell[] = [
-    {
-        id: 'tripId',
-        align: 'left',
-        disablePadding: true,
-        label: 'Trip id',
-    },
-    {
-        id: 'transporter',
-        align: 'left',
-        disablePadding: false,
-        label: 'Transporter',
-    },
-    {
-        id: 'source',
-        align: 'left',
-        disablePadding: false,
-        label: 'Source',
-    },
-    {
-        id: 'destination',
-        align: 'left',
-        disablePadding: false,
-        label: 'Destination',
-    },
-    {
-        id: 'phone',
-        align: 'left',
-        disablePadding: false,
-        label: 'Phone',
-    },
-    {
-        id: 'eta',
-        align: 'left',
-        disablePadding: false,
-        label: 'ETA',
-    },
-    {
-        id: 'distanceRemaining',
-        align: 'center',
-        disablePadding: false,
-        label: 'Distance remaining',
-    },
-    {
-        id: 'tripStatus',
-        align: 'center',
-        disablePadding: false,
-        label: 'Trip status',
-    },
-    {
-        id: 'tatStatus',
-        align: 'center',
-        disablePadding: false,
-        label: 'TAT status',
-    },
-];
-
-interface EnhancedTableProps {
-    numSelected: number;
-    onRequestSort: (
-        event: React.MouseEvent<unknown>,
-        property: keyof Data
-    ) => void;
-    onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    order: Order;
-    orderBy: string;
-    rowCount: number;
-}
-
-const EnhancedTableHead = (props: EnhancedTableProps) => {
-    const {
-        onSelectAllClick,
-        order,
-        orderBy,
-        numSelected,
-        rowCount,
-        onRequestSort,
-    } = props;
-    const createSortHandler =
-        (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
-            onRequestSort(event, property);
-        };
-
-    return (
-        <TableHead>
-            <TableRow>
-                <TableCell padding='checkbox'>
-                    <Checkbox
-                        color='primary'
-                        indeterminate={
-                            numSelected > 0 && numSelected < rowCount
-                        }
-                        checked={rowCount > 0 && numSelected === rowCount}
-                        onChange={onSelectAllClick}
-                        inputProps={{
-                            'aria-label': 'select all desserts',
-                        }}
-                    />
-                </TableCell>
-                {headCells.map((headCell) => (
-                    <TableCell
-                        key={headCell.id}
-                        align={headCell.align}
-                        sx={{ minWidth: '225px' }}
-                        padding={headCell.disablePadding ? 'none' : 'normal'}
-                        sortDirection={orderBy === headCell.id ? order : false}>
-                        <TableSortLabel
-                            active={orderBy === headCell.id}
-                            direction={orderBy === headCell.id ? order : 'asc'}
-                            onClick={createSortHandler(headCell.id)}>
-                            {headCell.label}
-                            {orderBy === headCell.id ? (
-                                <Box component='span' sx={visuallyHidden}>
-                                    {order === 'desc'
-                                        ? 'sorted descending'
-                                        : 'sorted ascending'}
-                                </Box>
-                            ) : null}
-                        </TableSortLabel>
-                    </TableCell>
-                ))}
-            </TableRow>
-        </TableHead>
-    );
+type TableProps = {
+    trips: Trip[];
 };
 
-interface EnhancedTableToolbarProps {
-    numSelected: number;
-}
-
-const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
-    const { numSelected } = props;
-
-    return (
-        <Toolbar
-            sx={{
-                pl: { sm: 2 },
-                pr: { xs: 1, sm: 1 },
-                ...(numSelected > 0 && {
-                    bgcolor: (theme) =>
-                        alpha(
-                            theme.palette.primary.main,
-                            theme.palette.action.activatedOpacity
-                        ),
-                }),
-            }}>
-            {numSelected > 0 ? (
-                <Typography
-                    sx={{ flex: '1 1 100%' }}
-                    color='inherit'
-                    variant='subtitle1'
-                    component='div'>
-                    {numSelected} selected
-                </Typography>
-            ) : (
-                <Typography
-                    sx={{ flex: '1 1 100%' }}
-                    variant='h6'
-                    id='tableTitle'
-                    component='div'>
-                    Trip List
-                </Typography>
-            )}
-            {numSelected > 0 ? (
-                <Tooltip title='Delete'>
-                    <IconButton>
-                        <DeleteIcon />
-                    </IconButton>
-                </Tooltip>
-            ) : (
-                <Box display='flex' gap='12px'>
-                    <UpdateStatusDialog />
-                    <AddTrip />
-                </Box>
-            )}
-        </Toolbar>
-    );
-};
-
-export const EnhancedTable = (): JSX.Element => {
+export const Table = ({ trips }: TableProps): JSX.Element => {
     const [order, setOrder] = React.useState<Order>('asc');
-    const [orderBy, setOrderBy] = React.useState<keyof Data>('tripId');
+    const [orderBy, setOrderBy] =
+        React.useState<keyof TripFormattedData>('tripId');
     const [selected, setSelected] = React.useState<readonly string[]>([]);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
+    const rows = trips.map((data) => ({
+        tripId: data.tripId,
+        transporter: data.transporter,
+        source: data.source,
+        destination: data.dest,
+        phone: data.phoneNumber,
+        eta: data.tripEndTime,
+        distanceRemaining: data.distanceRemaining,
+        tripStatus: data.currentStatus,
+        tatStatus: findTATStatus(data),
+    }));
+
     const handleRequestSort = (
         event: React.MouseEvent<unknown>,
-        property: keyof Data
+        property: keyof TripFormattedData
     ) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
@@ -353,13 +114,13 @@ export const EnhancedTable = (): JSX.Element => {
         <>
             <Box sx={{ width: '100%' }}>
                 <Paper sx={{ width: '100%', mb: 2 }}>
-                    <EnhancedTableToolbar numSelected={selected.length} />
+                    <Toolbar numSelected={selected.length} />
                     <TableContainer>
-                        <Table
+                        <MUITable
                             sx={{ minWidth: 750 }}
                             aria-labelledby='tableTitle'
                             size='medium'>
-                            <EnhancedTableHead
+                            <TableHead
                                 numSelected={selected.length}
                                 order={order}
                                 orderBy={orderBy}
@@ -370,7 +131,7 @@ export const EnhancedTable = (): JSX.Element => {
                             <TableBody>
                                 {visibleRows.map((row, index) => {
                                     const isItemSelected = isSelected(
-                                        row.tripId
+                                        row.tripId as string
                                     );
                                     const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -378,7 +139,10 @@ export const EnhancedTable = (): JSX.Element => {
                                         <TableRow
                                             hover
                                             onClick={(event) =>
-                                                handleClick(event, row.tripId)
+                                                handleClick(
+                                                    event,
+                                                    row.tripId as string
+                                                )
                                             }
                                             role='checkbox'
                                             aria-checked={isItemSelected}
@@ -436,7 +200,19 @@ export const EnhancedTable = (): JSX.Element => {
                                                 {row.tripStatus}
                                             </TableCell>
                                             <TableCell align='center'>
-                                                {row.tatStatus}
+                                                <Chip
+                                                    label={row.tatStatus}
+                                                    sx={{
+                                                        marginLeft: '8px',
+                                                        background: getTATColor(
+                                                            row.tatStatus
+                                                        ).color2,
+                                                        color: getTATColor(
+                                                            row.tatStatus
+                                                        ).color1,
+                                                        borderRadius: '4px',
+                                                    }}
+                                                />
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -450,7 +226,7 @@ export const EnhancedTable = (): JSX.Element => {
                                     </TableRow>
                                 )}
                             </TableBody>
-                        </Table>
+                        </MUITable>
                     </TableContainer>
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 25]}
