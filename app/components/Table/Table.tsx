@@ -20,8 +20,9 @@ import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { visuallyHidden } from '@mui/utils';
 import mock from '../../mockData.json';
-import { Button, ButtonGroup, Link } from '@mui/material';
+import { Link } from '@mui/material';
 import { AddTrip } from '../AddTrip';
+import { UpdateStatusDialog } from '../UpdateStatusDialog';
 
 interface Data {
     tripId: string;
@@ -268,16 +269,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
                 </Tooltip>
             ) : (
                 <Box display='flex' gap='12px'>
-                    <Button
-                        variant='outlined'
-                        sx={{
-                            width: '200px',
-                            borderRadius: '8px',
-                            textTransform: 'none',
-                        }}
-                        disabled>
-                        Update Status
-                    </Button>
+                    <UpdateStatusDialog />
                     <AddTrip />
                 </Box>
             )}
