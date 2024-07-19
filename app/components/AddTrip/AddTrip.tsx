@@ -17,6 +17,8 @@ import {
 import { styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
+import mockStates from '../../data/mockStates.json';
+import { v4 } from 'uuid';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialogContent-root': {
@@ -34,19 +36,19 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 const deliveryServices = [
     {
-        value: 'blue_dart',
+        value: 'Blue dart',
         label: 'Blue dart',
     },
     {
-        value: 'dtdc',
+        value: 'DTDC',
         label: 'DTDC',
     },
     {
-        value: 'delhivery',
+        value: 'Delhivery',
         label: 'Delhivery',
     },
     {
-        value: 'merks',
+        value: 'Merks',
         label: 'Merks',
     },
 ];
@@ -55,6 +57,23 @@ export const AddTrip = () => {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const [isOpen, setIsOpen] = useState(false);
+    const [isFormValid, setIsFormValid] = useState(false);
+    const existingTrips = localStorage.getItem('tripData');
+
+    const [formValues, setFormValues] = useState({
+        tripId: '',
+        source: '',
+        phone: '',
+        transporter: '',
+        destination: '',
+    });
+    const [formErrors, setFormErrors] = useState({
+        tripId: false,
+        source: false,
+        phone: false,
+        transporter: false,
+        destination: false,
+    });
 
     const handleClose = () => {
         setIsOpen(false);
@@ -62,6 +81,63 @@ export const AddTrip = () => {
 
     const handleModalOpen = () => {
         setIsOpen(true);
+    };
+
+    const handleAddTrip = () => {
+        const errors = {
+            tripId: !formValues.tripId,
+            source: !formValues.source,
+            phone: !formValues.phone,
+            transporter: !formValues.transporter,
+            destination: !formValues.destination,
+        };
+        setFormErrors(errors);
+
+        if (isFormValid) {
+            let updateData = [];
+            if (existingTrips) updateData = JSON.parse(existingTrips);
+            const newData = {
+                _id: v4(),
+                tripId: v4(),
+                transporter: formValues.transporter,
+                tripStartTime: new Date(),
+                currentStatusCode: 'BKD',
+                currentStatus: 'Booked',
+                phoneNumber: formValues.phone,
+                etaDays: 3,
+                distanceRemaining: 321,
+                tripEndTime: '',
+                source: formValues.source,
+                sourceLatitude: 12,
+                sourceLongitude: 89.4,
+                dest: formValues.destination,
+                destLatitude: 11.7,
+                destLongitude: 80.9,
+                lastPingTime: new Date(),
+                createdAt: new Date(),
+            };
+            updateData = [newData, ...updateData];
+            localStorage.setItem('tripData', JSON.stringify(updateData));
+            handleClose();
+            // Here you can add logic to handle form submission, such as sending data to a server
+        }
+    };
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = event.target;
+        const errors = {
+            tripId: !formValues.tripId,
+            source: !formValues.source,
+            phone: !formValues.phone,
+            transporter: !formValues.transporter,
+            destination: !formValues.destination,
+        };
+        const isValid = !Object.values(errors).some((error) => error);
+        setIsFormValid(isValid);
+        setFormValues({
+            ...formValues,
+            [name]: value,
+        });
     };
 
     return (
@@ -114,22 +190,59 @@ export const AddTrip = () => {
                                 required
                                 id='outlined-required'
                                 label='Trip ID'
+                                name='tripId'
+                                onChange={handleChange}
+                                error={formErrors.tripId}
+                                helperText={
+                                    formErrors.tripId
+                                        ? 'Trip ID is required'
+                                        : ''
+                                }
                             />
                             <TextField
-                                required
-                                id='outlined-required'
+                                id='outlined-select-destination'
                                 label='Source'
-                            />
+                                name='source'
+                                value={formValues.source}
+                                onChange={handleChange}
+                                error={formErrors.source}
+                                helperText={
+                                    formErrors.source
+                                        ? 'Source is required'
+                                        : ''
+                                }
+                                select>
+                                {mockStates.map((option) => (
+                                    <MenuItem key={option} value={option}>
+                                        {option}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                             <TextField
                                 required
                                 id='outlined-required'
                                 label='Phone'
+                                name='phone'
+                                onChange={handleChange}
+                                error={formErrors.phone}
+                                helperText={
+                                    formErrors.phone ? 'Phone is required' : ''
+                                }
                             />
                         </div>
                         <div>
                             <TextField
                                 id='outlined-select-transporter'
                                 label='Select Transporter'
+                                name='transporter'
+                                value={formValues.transporter}
+                                onChange={handleChange}
+                                error={formErrors.transporter}
+                                helperText={
+                                    formErrors.transporter
+                                        ? 'Transporter is required'
+                                        : ''
+                                }
                                 select>
                                 {deliveryServices.map((option) => (
                                     <MenuItem
@@ -142,12 +255,19 @@ export const AddTrip = () => {
                             <TextField
                                 id='outlined-select-destination'
                                 label='Select Destination'
+                                name='destination'
+                                value={formValues.destination}
+                                onChange={handleChange}
+                                error={formErrors.destination}
+                                helperText={
+                                    formErrors.destination
+                                        ? 'Destination is required'
+                                        : ''
+                                }
                                 select>
-                                {deliveryServices.map((option) => (
-                                    <MenuItem
-                                        key={option.value}
-                                        value={option.value}>
-                                        {option.label}
+                                {mockStates.map((option) => (
+                                    <MenuItem key={option} value={option}>
+                                        {option}
                                     </MenuItem>
                                 ))}
                             </TextField>
@@ -178,8 +298,8 @@ export const AddTrip = () => {
                             fontWeight: '400',
                             marginLeft: 0,
                         }}
-                        onClick={handleModalOpen}
-                        disableRipple>
+                        onClick={handleAddTrip}
+                        disabled={!isFormValid}>
                         Add Trip
                     </Button>
                 </DialogActions>

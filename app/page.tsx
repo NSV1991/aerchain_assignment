@@ -1,3 +1,5 @@
+'use-client';
+
 import styles from './page.module.css';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -6,7 +8,7 @@ import '@fontsource/roboto/700.css';
 import { Table } from './components/Table';
 import { Header } from './components/Header';
 
-import mock from './mockData.json';
+import mock from './data/mockData.json';
 
 export default function Home() {
     return (

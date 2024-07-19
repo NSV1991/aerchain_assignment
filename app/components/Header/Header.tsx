@@ -5,6 +5,7 @@ import { styled } from '@mui/material/styles';
 import { PieChart } from '../PieChart';
 import { Trip } from '@/app/utils/types';
 import { findTATStatus } from '@/app/utils/dataUtils';
+import { useEffect, useState } from 'react';
 
 const StyledTypoGraphy = styled(Typography)(({ theme }) => ({
     fontSize: '16px',
@@ -16,6 +17,17 @@ type HeaderProps = {
 };
 
 export const Header = ({ trips }: HeaderProps) => {
+    // const localData = localStorage.getItem('tripData');
+    // const [trips, setLatestTrips] = useState<Trip[]>(trips);
+    // useEffect(() => {
+    //     if (!localData) {
+    //         localStorage.setItem('tripData', JSON.stringify(trips));
+    //         setLatestTrips(trips);
+    //     } else {
+    //         setLatestTrips(JSON.parse(localData));
+    //     }
+    // }, [localData, trips]);
+
     const totalTrips = trips.length;
 
     const totalDelivered = trips.filter(
@@ -41,8 +53,6 @@ export const Header = ({ trips }: HeaderProps) => {
     const delayCount = formattedData.filter(
         (trip) => trip.tatStatus === 'Delayed'
     ).length;
-
-    console.log('delayCount:', delayCount);
 
     const onTimeCount = formattedData.filter(
         (trip) => trip.tatStatus === 'On time'

@@ -56,3 +56,19 @@ export const getTATColor = (status: string) => {
         return { color1: '#038700', color2: 'rgba(3, 135, 0, 0.1)' };
     return { color1: '#CC3333', color2: '#D7E3FE' };
 };
+
+export const getTripStatusColor = (status: string) => {
+    if (status === 'Booked') {
+        return { color: '#313131', backgroundColor: '#3131311A' };
+    }
+    if (status === 'Reached Destination') {
+        return { color: '#038700', backgroundColor: 'rgba(3, 135, 0, 0.1)' };
+    }
+    if (status === 'Delivered') {
+        return { color: '#004085', backgroundColor: 'rgba(0, 64, 133, 0.1)' };
+    }
+    return { color: '#6c757d', backgroundColor: 'rgba(108, 117, 125, 0.1)' }; // Default colors
+};
+
+export const formattedDate = (inputDate: string) =>
+    dayjs(inputDate).format('MM/DD/YY, h:mmA');

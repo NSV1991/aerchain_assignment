@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import MUITable from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -14,8 +14,10 @@ import { Chip, Link } from '@mui/material';
 import { Order, Trip, TripFormattedData } from '@/app/utils/types';
 import {
     findTATStatus,
+    formattedDate,
     getComparator,
     getTATColor,
+    getTripStatusColor,
     stableSort,
 } from '@/app/utils/dataUtils';
 import { TableHead } from './TableHead';
@@ -26,12 +28,24 @@ type TableProps = {
 };
 
 export const Table = ({ trips }: TableProps): JSX.Element => {
-    const [order, setOrder] = React.useState<Order>('asc');
-    const [orderBy, setOrderBy] =
-        React.useState<keyof TripFormattedData>('tripId');
-    const [selected, setSelected] = React.useState<readonly string[]>([]);
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    // const localData =
+    //     typeof window !== 'undefined' && localStorage.getItem('tripData');
+
+    // const [latestTrips, setLatestTrips] = useState<Trip[]>(trips);
+    // useEffect(() => {
+    //     if (!localData) {
+    //         localStorage.setItem('tripData', JSON.stringify(trips));
+    //         setLatestTrips(trips);
+    //     } else {
+    //         setLatestTrips(JSON.parse(localData));
+    //     }
+    // }, [window, localData, trips]);
+
+    const [order, setOrder] = useState<Order>('asc');
+    const [orderBy, setOrderBy] = useState<keyof TripFormattedData>('tripId');
+    const [selected, setSelected] = useState<readonly string[]>([]);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
 
     const rows = trips.map((data) => ({
         tripId: data.tripId,
@@ -39,10 +53,10 @@ export const Table = ({ trips }: TableProps): JSX.Element => {
         source: data.source,
         destination: data.dest,
         phone: data.phoneNumber,
-        eta: data.tripEndTime,
-        distanceRemaining: data.distanceRemaining,
-        tripStatus: data.currentStatus,
-        tatStatus: findTATStatus(data),
+        eta: formattedDate(data.tripEndTime || data.lastPingTime) || '--',
+        distanceRemaining: data.distanceRemaining || '--',
+        tripStatus: data.currentStatus || '--',
+        tatStatus: findTATStatus(data) || '--',
     }));
 
     const handleRequestSort = (
@@ -101,13 +115,13 @@ export const Table = ({ trips }: TableProps): JSX.Element => {
     const emptyRows =
         page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-    const visibleRows = React.useMemo(
+    const visibleRows = useMemo(
         () =>
             stableSort(rows, getComparator(order, orderBy)).slice(
                 page * rowsPerPage,
                 page * rowsPerPage + rowsPerPage
             ),
-        [order, orderBy, page, rowsPerPage]
+        [rows, order, orderBy, page, rowsPerPage]
     );
 
     return (
@@ -197,7 +211,20 @@ export const Table = ({ trips }: TableProps): JSX.Element => {
                                                 {row.distanceRemaining}
                                             </TableCell>
                                             <TableCell align='center'>
-                                                {row.tripStatus}
+                                                <Chip
+                                                    label={row.tripStatus}
+                                                    sx={{
+                                                        marginLeft: '8px',
+                                                        background:
+                                                            getTripStatusColor(
+                                                                row.tripStatus
+                                                            ).backgroundColor,
+                                                        color: getTripStatusColor(
+                                                            row.tripStatus
+                                                        ).color,
+                                                        borderRadius: '4px',
+                                                    }}
+                                                />
                                             </TableCell>
                                             <TableCell align='center'>
                                                 <Chip
