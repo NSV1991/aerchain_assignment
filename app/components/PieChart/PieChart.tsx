@@ -4,11 +4,6 @@ import { useDrawingArea } from '@mui/x-charts/hooks';
 import { styled } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
 
-const data = [
-    { value: 80, label: 'On-time' },
-    { value: 20, label: 'delay' },
-];
-
 const size = {
     width: 150,
     height: 150,
@@ -24,7 +19,7 @@ const StyledText = styled('text')(({ theme }) => ({
 const PieCenterLabel = ({ children }: { children: React.ReactNode }) => {
     const { width, height, left, top } = useDrawingArea();
     return (
-        <StyledText x={left + width / 2 - 13} y={top + height / 2 + 5}>
+        <StyledText x={left + width / 2 - 17} y={top + height / 2 + 5}>
             {children}
         </StyledText>
     );
@@ -32,11 +27,20 @@ const PieCenterLabel = ({ children }: { children: React.ReactNode }) => {
 
 type PieChartProps = {
     onTimeTrips: number;
+    delayedTrips: number;
     totalTrips: number;
 };
 
-export const PieChart = ({ onTimeTrips, totalTrips }: PieChartProps) => {
+export const PieChart = ({
+    delayedTrips,
+    onTimeTrips,
+    totalTrips,
+}: PieChartProps) => {
     const onTimeTripsPercentage = Math.round((onTimeTrips / totalTrips) * 100);
+    const data = [
+        { value: onTimeTrips, label: 'On time' },
+        { value: delayedTrips, label: 'Delayed' },
+    ];
     return (
         <Box
             sx={{
@@ -44,6 +48,7 @@ export const PieChart = ({ onTimeTrips, totalTrips }: PieChartProps) => {
                 flexDirection: 'column',
                 marginLeft: '10px',
                 justifyContent: 'center',
+                alignItems: 'center',
             }}>
             <MUIPieChart
                 series={[{ data, innerRadius: 40, outerRadius: 50, cx: '50%' }]}

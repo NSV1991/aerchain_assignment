@@ -30,11 +30,11 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
     '& .MuiDialogActions-root': {
         padding: theme.spacing(2, 4),
-        'margin-left': 0,
+        marginLeft: 0,
     },
     '& .MuiPaper-root': {
-        'max-width': '800px',
-        'border-radius': '12px',
+        maxWidth: '800px',
+        borderRadius: '12px',
     },
 }));
 
@@ -269,12 +269,13 @@ export const AddTrip = () => {
                         }}>
                         <Button
                             variant='outlined'
+                            onClick={handleClose}
                             sx={{
                                 width: fullScreen ? '100%' : '200px',
                                 borderRadius: '8px',
                                 textTransform: 'none',
                             }}>
-                            Update Status
+                            Close
                         </Button>
                         <Button
                             variant='contained'

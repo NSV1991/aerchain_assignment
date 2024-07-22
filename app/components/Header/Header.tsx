@@ -128,6 +128,7 @@ export const Header = () => {
                     }}>
                     <PieChart
                         onTimeTrips={onTimeCount}
+                        delayedTrips={delayCount}
                         totalTrips={tripsCount}
                     />
                     <Box>

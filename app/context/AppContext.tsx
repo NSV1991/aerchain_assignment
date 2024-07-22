@@ -9,6 +9,7 @@ interface AppState {
     trips: Trip[];
     totalTrips: Trip[];
     currentFilter: Filter;
+    actionMsg?: string;
 }
 
 interface AppContextType {
@@ -41,6 +42,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         setState((prevState) => ({
             ...prevState,
             totalTrips: [trip, ...prevState.totalTrips],
+            actionMsg: 'Trip added successfully!',
         }));
     };
 
@@ -83,6 +85,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             ...prevState,
             trips: filterDataByStatus(prevState.currentFilter, updatedTrips),
             totalTrips: updatedTrips,
+            actionMsg: 'Trip status updated successfully!',
         }));
     };
 
