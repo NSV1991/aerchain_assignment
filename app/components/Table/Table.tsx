@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import MUITable from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -11,7 +11,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 import { Chip, Link } from '@mui/material';
-import { Order, Trip, TripFormattedData } from '@/app/utils/types';
+import { Order, TripFormattedData } from '@/app/utils/types';
 import {
     findTATStatus,
     formattedDate,
@@ -31,7 +31,7 @@ export const Table = (): JSX.Element => {
 
     const [order, setOrder] = useState<Order>('asc');
     const [orderBy, setOrderBy] = useState<keyof TripFormattedData>('tripId');
-    const [selected, setSelected] = useState<readonly string[]>([]);
+    const [selected, setSelected] = useState<string[]>([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -46,6 +46,10 @@ export const Table = (): JSX.Element => {
         tripStatus: data.currentStatus || '--',
         tatStatus: findTATStatus(data) || '--',
     }));
+
+    useEffect(() => {
+        setSelected([]);
+    }, [trips]);
 
     const handleRequestSort = (
         event: React.MouseEvent<unknown>,
@@ -69,7 +73,7 @@ export const Table = (): JSX.Element => {
 
     const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
         const selectedIndex = selected.indexOf(id);
-        let newSelected: readonly string[] = [];
+        let newSelected: string[] = [];
 
         if (selectedIndex === -1) {
             newSelected = newSelected.concat(selected, id);
@@ -116,7 +120,7 @@ export const Table = (): JSX.Element => {
         <>
             <Box sx={{ width: '100%' }}>
                 <Paper sx={{ width: '100%', mb: 2 }}>
-                    <Toolbar numSelected={selected.length} />
+                    <Toolbar selectedTripIDs={selected} />
                     <TableContainer>
                         <MUITable
                             sx={{ minWidth: 750 }}

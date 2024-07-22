@@ -6,7 +6,6 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle,
     IconButton,
     MenuItem,
@@ -20,6 +19,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { useAppContext } from '@/app/context/AppContext';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import { CONSTANTS } from '@/app/utils';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialogContent-root': {
@@ -33,51 +36,82 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
         'max-width': '800px',
         'border-radius': '12px',
     },
+    '& .error': {
+        '> div': {
+            border: '1px solid red',
+        },
+        '& .MuiFormHelperText-root': {
+            color: 'red',
+        },
+    },
 }));
 
-const deliveryServices = [
-    {
-        value: 'blue_dart',
-        label: 'Blue dart',
-    },
-    {
-        value: 'dtdc',
-        label: 'DTDC',
-    },
-    {
-        value: 'delhivery',
-        label: 'Delhivery',
-    },
-    {
-        value: 'merks',
-        label: 'Merks',
-    },
-];
+const schema = Yup.object().shape({
+    transporter: Yup.string().required('Transporter is required field'),
+    dateTime: Yup.string().required('Time is required field'),
+});
 
 type UpdateStatusDialogProps = {
-    disabled?: boolean;
+    selectedTripIDs: string[];
 };
-export const UpdateStatusDialog = ({ disabled }: UpdateStatusDialogProps) => {
+export const UpdateStatusDialog = ({
+    selectedTripIDs,
+}: UpdateStatusDialogProps) => {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const [isOpen, setIsOpen] = useState(false);
+    const {
+        state: { currentFilter },
+        updateStatus,
+    } = useAppContext();
 
-    const handleClose = () => {
+    const { DELIVERY_SERVICES } = CONSTANTS;
+
+    const formik = useFormik({
+        initialValues: {
+            transporter: '',
+            dateTime: '',
+        },
+
+        // Pass the Yup schema to validate the form
+        validationSchema: schema,
+
+        // Handle form submission
+        onSubmit: async ({ dateTime, transporter }) => {
+            selectedTripIDs.forEach((selectedTripId) => {
+                updateStatus(selectedTripId, dateTime, transporter);
+            });
+            handleClose();
+        },
+    });
+
+    const {
+        errors,
+        touched,
+        values,
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        handleReset,
+        isValid,
+        dirty,
+    } = formik;
+
+    const selectedTripsCount = selectedTripIDs.length;
+
+    const handleClose = (event?: unknown) => {
         setIsOpen(false);
+        handleReset(event);
     };
 
     const handleModalOpen = () => {
         setIsOpen(true);
     };
 
-    const handleUpdateStatus = () => {
-        handleClose();
-    };
-
     return (
         <>
             <Button
-                disabled={disabled}
+                disabled={selectedTripsCount === 0 || currentFilter === 'DEL'}
                 variant='outlined'
                 sx={{
                     width: '200px',
@@ -92,87 +126,121 @@ export const UpdateStatusDialog = ({ disabled }: UpdateStatusDialogProps) => {
                 open={isOpen}
                 onClose={handleClose}
                 aria-labelledby='update-status-dialog'>
-                <DialogTitle id='update-status-dialog'>
-                    Update Status
-                </DialogTitle>
-                <IconButton
-                    aria-label='close'
-                    onClick={handleClose}
-                    sx={{
-                        position: 'absolute',
-                        right: 8,
-                        top: 8,
-                        color: (theme) => theme.palette.grey[500],
-                    }}>
-                    <CloseIcon />
-                </IconButton>
-                <DialogContent sx={{ borderRadius: '8px' }}>
-                    <Box
-                        component='form'
-                        sx={{
-                            '& .MuiTextField-root': {
-                                m: 2,
-                                width: fullScreen ? '100%' : '400px',
-                            },
-                            '& .MuiSelect-select': {
-                                padding: '14px',
-                            },
-                            '& .MuiOutlinedInput-input': {
-                                padding: '14px',
-                            },
-                            display: 'flex',
-                            flexDirection: 'column',
-                            width: 'fit-content',
-                        }}
-                        noValidate
-                        autoComplete='off'>
-                        <TextField
-                            id='outlined-select-transporter'
-                            label='Select Transporter'
-                            select>
-                            {deliveryServices.map((option) => (
-                                <MenuItem
-                                    key={option.value}
-                                    value={option.value}>
-                                    {option.label}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DateTimePicker />
-                        </LocalizationProvider>
-                    </Box>
-                </DialogContent>
-
-                <DialogActions
-                    sx={{
-                        flexDirection: fullScreen ? 'column' : 'row',
-                        gap: '8px',
-                        marginLeft: 0,
-                    }}>
-                    <Button
-                        variant='outlined'
-                        sx={{
-                            width: fullScreen ? '100%' : '100px',
-                            borderRadius: '8px',
-                            textTransform: 'none',
-                        }}
-                        onClick={handleClose}>
-                        Cancel
-                    </Button>
-                    <Button
-                        variant='contained'
-                        sx={{
-                            width: fullScreen ? '100%' : '150px',
-                            borderRadius: '8px',
-                            textTransform: 'none',
-                            fontWeight: '400',
-                            marginLeft: 0,
-                        }}
-                        onClick={handleUpdateStatus}>
+                <form onSubmit={handleSubmit}>
+                    <DialogTitle id='update-status-dialog'>
                         Update Status
-                    </Button>
-                </DialogActions>
+                    </DialogTitle>
+                    <IconButton
+                        aria-label='close'
+                        onClick={handleClose}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: (theme) => theme.palette.grey[500],
+                        }}>
+                        <CloseIcon />
+                    </IconButton>
+                    <DialogContent sx={{ borderRadius: '8px' }}>
+                        <Box
+                            component='div'
+                            sx={{
+                                '& .MuiTextField-root': {
+                                    m: 2,
+                                    width: fullScreen ? '100%' : '400px',
+                                },
+                                '& .MuiSelect-select': {
+                                    padding: '14px',
+                                },
+                                '& .MuiOutlinedInput-input': {
+                                    padding: '14px',
+                                },
+                                display: 'flex',
+                                flexDirection: 'column',
+                                width: 'fit-content',
+                            }}>
+                            <TextField
+                                id='transporter'
+                                label='Select Transporter'
+                                name='transporter'
+                                value={values.transporter}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={
+                                    touched.transporter &&
+                                    Boolean(errors.transporter)
+                                }
+                                helperText={
+                                    touched.transporter && errors.transporter
+                                }
+                                select>
+                                {DELIVERY_SERVICES.map((option) => (
+                                    <MenuItem
+                                        key={option.value}
+                                        value={option.value}>
+                                        {option.label}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DateTimePicker
+                                    name='dateTime'
+                                    className={
+                                        touched.dateTime &&
+                                        Boolean(errors.dateTime)
+                                            ? 'error'
+                                            : ''
+                                    }
+                                    slotProps={{
+                                        textField: {
+                                            helperText:
+                                                touched.dateTime &&
+                                                errors.dateTime,
+                                        },
+                                    }}
+                                    onClose={() =>
+                                        formik.setFieldTouched('dateTime', true)
+                                    }
+                                    onChange={(value) => {
+                                        formik.setFieldValue('dateTime', value);
+                                    }}
+                                    disablePast
+                                />
+                            </LocalizationProvider>
+                        </Box>
+                    </DialogContent>
+
+                    <DialogActions
+                        sx={{
+                            flexDirection: fullScreen ? 'column' : 'row',
+                            gap: '8px',
+                            marginLeft: 0,
+                        }}>
+                        <Button
+                            variant='outlined'
+                            sx={{
+                                width: fullScreen ? '100%' : '100px',
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                            }}
+                            onClick={handleClose}>
+                            Cancel
+                        </Button>
+                        <Button
+                            disabled={!dirty || !isValid}
+                            type='submit'
+                            variant='contained'
+                            sx={{
+                                width: fullScreen ? '100%' : '150px',
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                                fontWeight: '400',
+                                marginLeft: 0,
+                            }}>
+                            Update Status
+                        </Button>
+                    </DialogActions>
+                </form>
             </BootstrapDialog>
         </>
     );

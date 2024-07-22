@@ -1,26 +1,19 @@
-import {
-    alpha,
-    Box,
-    IconButton,
-    Toolbar as MUIToolbar,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import { alpha, Box, Toolbar as MUIToolbar, Typography } from '@mui/material';
 import { UpdateStatusDialog } from '../UpdateStatusDialog';
 import { AddTrip } from '../AddTrip';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 interface ToolbarProps {
-    numSelected: number;
+    selectedTripIDs: string[];
 }
 
-export const Toolbar = ({ numSelected }: ToolbarProps) => {
+export const Toolbar = ({ selectedTripIDs }: ToolbarProps) => {
+    const selectedTripsCount = selectedTripIDs.length;
     return (
         <MUIToolbar
             sx={{
                 pl: { sm: 2 },
                 pr: { xs: 1, sm: 1 },
-                ...(numSelected > 0 && {
+                ...(selectedTripsCount > 0 && {
                     bgcolor: (theme) =>
                         alpha(
                             theme.palette.primary.main,
@@ -28,13 +21,13 @@ export const Toolbar = ({ numSelected }: ToolbarProps) => {
                         ),
                 }),
             }}>
-            {numSelected > 0 ? (
+            {selectedTripsCount > 0 ? (
                 <Typography
                     sx={{ flex: '1 1 100%' }}
                     color='inherit'
                     variant='subtitle1'
                     component='div'>
-                    {numSelected} selected
+                    {selectedTripsCount} selected
                 </Typography>
             ) : (
                 <Typography
@@ -47,7 +40,7 @@ export const Toolbar = ({ numSelected }: ToolbarProps) => {
             )}
 
             <Box display='flex' gap='12px'>
-                <UpdateStatusDialog disabled={numSelected <= 0} />
+                <UpdateStatusDialog selectedTripIDs={selectedTripIDs} />
                 <AddTrip />
             </Box>
         </MUIToolbar>

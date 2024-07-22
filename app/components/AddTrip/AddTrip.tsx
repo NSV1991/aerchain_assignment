@@ -22,6 +22,7 @@ import { v4 } from 'uuid';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useAppContext } from '@/app/context/AppContext';
+import { CONSTANTS } from '@/app/utils';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialogContent-root': {
@@ -37,33 +38,6 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 
-const deliveryServices = [
-    {
-        value: 'Bluedart',
-        label: 'Bluedart',
-    },
-    {
-        value: 'DHL',
-        label: 'Delhivery',
-    },
-    {
-        value: 'DTDC',
-        label: 'DTDC',
-    },
-    {
-        value: 'FedEx',
-        label: 'FedEx',
-    },
-    {
-        value: 'Gati',
-        label: 'Gati',
-    },
-    {
-        value: 'Merks',
-        label: 'Merks',
-    },
-];
-
 const schema = Yup.object().shape({
     tripId: Yup.string().required('Trip Id is required field'),
     source: Yup.string().required('Source is required field'),
@@ -78,6 +52,7 @@ export const AddTrip = () => {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const [isOpen, setIsOpen] = useState(false);
+    const { DELIVERY_SERVICES } = CONSTANTS;
 
     const { addTrip } = useAppContext();
 
@@ -253,7 +228,7 @@ export const AddTrip = () => {
                                         errors.transporter
                                     }
                                     select>
-                                    {deliveryServices.map((option) => (
+                                    {DELIVERY_SERVICES.map((option) => (
                                         <MenuItem
                                             key={option.value}
                                             value={option.value}>
