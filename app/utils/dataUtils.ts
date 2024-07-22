@@ -77,7 +77,11 @@ export const formattedDate = (inputDate: string) =>
     dayjs(inputDate).format('MM/DD/YY, h:mmA');
 
 export const filterDataByStatus = (status: Filter, trips: Trip[]) => {
-    return trips.filter((trip) => trip.currentStatus === STATUS[status]);
+    if (status !== STATUS.ALL) {
+        return trips.filter((trip) => trip.currentStatus === STATUS[status]);
+    }
+
+    return trips;
 };
 
 export const filterDataByTATStatus = (

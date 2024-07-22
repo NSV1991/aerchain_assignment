@@ -4,6 +4,7 @@ export const CONSTANTS = {
         DEL: 'Delivered',
         INT: 'In Transit',
         RD: 'Reached Destination',
+        ALL: 'ALL',
     },
     TAT_STATUS: {
         ON_TIME: 'On time',

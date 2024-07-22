@@ -69,10 +69,19 @@ export const Header = () => {
                     margin: '12px 30px 12px 6px',
                     alignItems: 'center',
                 }}>
-                <Box>
+                <Box
+                    component='div'
+                    onClick={() => handleFilterChange('ALL')}
+                    sx={{
+                        cursor: 'pointer',
+                        background:
+                            currentFilter === 'ALL' ? '#B3D1CF' : 'inherit',
+                    }}>
                     <StyledTypoGraphy
                         variant='subtitle1'
-                        sx={{ color: '#666666' }}>
+                        sx={{
+                            color: '#666666',
+                        }}>
                         Total Trips
                     </StyledTypoGraphy>
                     <StyledTypoGraphy

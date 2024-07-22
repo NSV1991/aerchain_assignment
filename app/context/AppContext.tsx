@@ -64,7 +64,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
                 trip.transporter = transporter;
                 trip.lastPingTime = dateTime;
 
-                if (trip.currentStatusCode === 'DEL') {
+                if (trip.currentStatusCode === 'RD') {
                     trip.currentStatus = 'DEL';
                     trip.currentStatus = STATUS.DEL;
                     trip.tripEndTime = dateTime;
