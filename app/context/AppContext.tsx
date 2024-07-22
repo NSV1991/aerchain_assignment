@@ -1,17 +1,20 @@
 // context/AppContext.tsx
 
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { Trip } from '../utils/types';
+import { Filter, Trip } from '../utils/types';
 import mock from '../data/mockData.json';
+import { filterDataByStatus } from '../utils';
 
-// Define the shape of the context data
 interface AppState {
     trips: Trip[];
+    totalTrips: Trip[];
+    currentFilter: Filter;
 }
 
 interface AppContextType {
     state: AppState;
     addTrip: (trip: Trip) => void;
+    updateFilter: (filter: Filter) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -23,18 +26,29 @@ interface AppProviderProps {
 // Create a provider component
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     const [state, setState] = useState<AppState>({
-        trips: mock.data,
+        trips: filterDataByStatus('DEL', mock.data),
+        totalTrips: mock.data,
+        currentFilter: 'DEL',
     });
 
-    const addTrip = (trip: Trip) => {
+    const addTrip = (trip: Trip): void => {
         setState((prevState) => ({
             ...prevState,
-            trips: [trip, ...prevState.trips],
+            totalTrips: [trip, ...prevState.totalTrips],
+        }));
+    };
+
+    const updateFilter = (filter: Filter): void => {
+        const filteredData = filterDataByStatus(filter, mock.data);
+        setState((prevState) => ({
+            ...prevState,
+            currentFilter: filter,
+            trips: filteredData,
         }));
     };
 
     return (
-        <AppContext.Provider value={{ state, addTrip }}>
+        <AppContext.Provider value={{ state, addTrip, updateFilter }}>
             {children}
         </AppContext.Provider>
     );

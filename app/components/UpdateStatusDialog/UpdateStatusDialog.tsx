@@ -54,7 +54,10 @@ const deliveryServices = [
     },
 ];
 
-export const UpdateStatusDialog = () => {
+type UpdateStatusDialogProps = {
+    disabled?: boolean;
+};
+export const UpdateStatusDialog = ({ disabled }: UpdateStatusDialogProps) => {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const [isOpen, setIsOpen] = useState(false);
@@ -74,6 +77,7 @@ export const UpdateStatusDialog = () => {
     return (
         <>
             <Button
+                disabled={disabled}
                 variant='outlined'
                 sx={{
                     width: '200px',

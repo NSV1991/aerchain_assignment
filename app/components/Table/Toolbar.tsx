@@ -45,18 +45,11 @@ export const Toolbar = ({ numSelected }: ToolbarProps) => {
                     Trip List
                 </Typography>
             )}
-            {numSelected > 0 ? (
-                <Tooltip title='Delete'>
-                    <IconButton>
-                        <DeleteIcon />
-                    </IconButton>
-                </Tooltip>
-            ) : (
-                <Box display='flex' gap='12px'>
-                    <UpdateStatusDialog />
-                    <AddTrip />
-                </Box>
-            )}
+
+            <Box display='flex' gap='12px'>
+                <UpdateStatusDialog disabled={numSelected <= 0} />
+                <AddTrip />
+            </Box>
         </MUIToolbar>
     );
 };

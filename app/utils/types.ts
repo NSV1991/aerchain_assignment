@@ -1,3 +1,6 @@
+import { CONSTANTS } from './constants';
+
+const { STATUS } = CONSTANTS;
 export interface Trip {
     _id: string;
     tripId: string;
@@ -39,3 +42,5 @@ export interface TripFormattedData {
     tripStatus: string;
     tatStatus: string;
 }
+
+export type Filter = keyof typeof STATUS;

@@ -3,8 +3,13 @@
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { PieChart } from '../PieChart';
-import { findTATStatus } from '@/app/utils/dataUtils';
+import {
+    filterDataByStatus,
+    filterDataByTATStatus,
+    findTATStatus,
+} from '@/app/utils/dataUtils';
 import { useAppContext } from '@/app/context/AppContext';
+import { Filter } from '@/app/utils';
 
 const StyledTypoGraphy = styled(Typography)(({ theme }) => ({
     fontSize: '16px',
@@ -13,20 +18,13 @@ const StyledTypoGraphy = styled(Typography)(({ theme }) => ({
 
 export const Header = () => {
     const {
-        state: { trips },
+        state: { currentFilter, totalTrips },
+        updateFilter,
     } = useAppContext();
 
-    const totalTrips = trips.length;
+    const tripsCount = totalTrips.length;
 
-    const totalDelivered = trips.filter(
-        (trip) => trip.currentStatus === 'Delivered'
-    ).length;
-
-    const totalDeliveredPercentage = Math.round(
-        (totalDelivered / totalTrips) * 100
-    );
-
-    const formattedData = trips.map((data) => ({
+    const formattedData = totalTrips.map((data) => ({
         tripId: data.tripId,
         transporter: data.transporter,
         source: data.source,
@@ -38,16 +36,23 @@ export const Header = () => {
         tatStatus: findTATStatus(data),
     }));
 
-    const delayCount = formattedData.filter(
-        (trip) => trip.tatStatus === 'Delayed'
-    ).length;
+    const totalDelivered = filterDataByStatus('DEL', totalTrips).length;
 
-    const onTimeCount = formattedData.filter(
-        (trip) => trip.tatStatus === 'On time'
-    ).length;
+    const totalDeliveredPercentage = Math.round(
+        (totalDelivered / tripsCount) * 100
+    );
 
-    const inTransitCount = onTimeCount + delayCount;
-    const inTransitPercentage = Math.round((inTransitCount / totalTrips) * 100);
+    const delayCount = filterDataByTATStatus('DELAYED', formattedData).length;
+
+    const onTimeCount = filterDataByTATStatus('ON_TIME', formattedData).length;
+
+    const inTransitCount = filterDataByStatus('INT', totalTrips).length;
+    const inTransitPercentage = Math.round((inTransitCount / tripsCount) * 100);
+
+    const handleFilterChange = (filter: Filter) => {
+        updateFilter(filter);
+    };
+
     return (
         <Box
             sx={{
@@ -73,7 +78,7 @@ export const Header = () => {
                     <StyledTypoGraphy
                         variant='body1'
                         sx={{ fontSize: '24px', fontWeight: '800' }}>
-                        {totalTrips}
+                        {tripsCount}
                     </StyledTypoGraphy>
                 </Box>
                 <Box>
@@ -114,7 +119,7 @@ export const Header = () => {
                     }}>
                     <PieChart
                         onTimeTrips={onTimeCount}
-                        totalTrips={totalTrips}
+                        totalTrips={tripsCount}
                     />
                     <Box>
                         <StyledTypoGraphy
@@ -139,12 +144,17 @@ export const Header = () => {
                     sx={{ width: '1px' }}
                 />
                 <Box
+                    component='div'
                     sx={{
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'flex-start',
                         width: '30%',
-                    }}>
+                        cursor: 'pointer',
+                        background:
+                            currentFilter === 'INT' ? '#B3D1CF' : 'inherit',
+                    }}
+                    onClick={() => handleFilterChange('INT')}>
                     <StyledTypoGraphy
                         variant='subtitle1'
                         sx={{ color: '#666666' }}>
@@ -175,11 +185,16 @@ export const Header = () => {
                     sx={{ width: '1px' }}
                 />
                 <Box
+                    component='div'
+                    onClick={() => handleFilterChange('DEL')}
                     sx={{
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'flex-start',
                         width: '30%',
+                        cursor: 'pointer',
+                        background:
+                            currentFilter === 'DEL' ? '#B3D1CF' : 'inherit',
                     }}>
                     <StyledTypoGraphy
                         variant='subtitle1'

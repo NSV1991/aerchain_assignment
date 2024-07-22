@@ -19,7 +19,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
 import mockStates from '../../data/mockStates.json';
 import { v4 } from 'uuid';
-import { Trip } from '@/app/utils/types';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import { useAppContext } from '@/app/context/AppContext';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -38,16 +39,24 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 const deliveryServices = [
     {
-        value: 'Blue dart',
-        label: 'Blue dart',
+        value: 'Bluedart',
+        label: 'Bluedart',
+    },
+    {
+        value: 'DHL',
+        label: 'Delhivery',
     },
     {
         value: 'DTDC',
         label: 'DTDC',
     },
     {
-        value: 'Delhivery',
-        label: 'Delhivery',
+        value: 'FedEx',
+        label: 'FedEx',
+    },
+    {
+        value: 'Gati',
+        label: 'Gati',
     },
     {
         value: 'Merks',
@@ -55,82 +64,58 @@ const deliveryServices = [
     },
 ];
 
+const schema = Yup.object().shape({
+    tripId: Yup.string().required('Trip Id is required field'),
+    source: Yup.string().required('Source is required field'),
+    phone: Yup.string()
+        .matches(/^[6-9]\d{9}$/, 'Invalid phone number')
+        .required('Phone number is required field'),
+    transporter: Yup.string().required('Transporter is required field'),
+    destination: Yup.string().required('Destination is required field'),
+});
+
 export const AddTrip = () => {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const [isOpen, setIsOpen] = useState(false);
-    const [isFormValid, setIsFormValid] = useState(false);
 
     const { addTrip } = useAppContext();
 
-    const [formValues, setFormValues] = useState({
-        tripId: '',
-        source: '',
-        phone: '',
-        transporter: '',
-        destination: '',
-    });
-    const [formErrors, setFormErrors] = useState({
-        tripId: false,
-        source: false,
-        phone: false,
-        transporter: false,
-        destination: false,
-    });
-
-    const handleClose = () => {
-        setIsOpen(false);
-        setFormValues({
+    const formik = useFormik({
+        initialValues: {
             tripId: '',
             source: '',
             phone: '',
             transporter: '',
             destination: '',
-        });
-        setFormErrors({
-            tripId: false,
-            source: false,
-            phone: false,
-            transporter: false,
-            destination: false,
-        });
-    };
+        },
 
-    const handleModalOpen = () => {
-        setIsOpen(true);
-    };
+        // Pass the Yup schema to validate the form
+        validationSchema: schema,
 
-    const validatePhone = (phone: string) => {
-        const phoneRegex = /^[0-9]{10}$/; // Simple regex for 10-digit phone numbers
-        return phoneRegex.test(phone);
-    };
-
-    const handleAddTrip = () => {
-        const errors = {
-            tripId: !formValues.tripId,
-            source: !formValues.source,
-            phone: !formValues.phone,
-            transporter: !formValues.transporter,
-            destination: !formValues.destination,
-        };
-        setFormErrors(errors);
-
-        if (isFormValid) {
+        // Handle form submission
+        onSubmit: async ({
+            tripId,
+            source,
+            phone,
+            transporter,
+            destination,
+        }) => {
             const newTrip = {
                 _id: v4(),
                 tripId: v4(),
-                transporter: formValues.transporter,
+                transporter: transporter,
                 tripStartTime: new Date().toISOString(),
                 currentStatusCode: 'BKD',
                 currentStatus: 'Booked',
-                phoneNumber: Number(formValues.phone),
-                etaDays: 3,
+                phoneNumber: Number(phone),
+                etaDays: 0,
                 distanceRemaining: 321,
                 tripEndTime: '',
-                source: formValues.source,
+                source: source,
                 sourceLatitude: 12,
                 sourceLongitude: 89.4,
-                dest: formValues.destination,
+                dest: destination,
                 destLatitude: 11.7,
                 destLongitude: 80.9,
                 lastPingTime: new Date().toISOString(),
@@ -138,39 +123,28 @@ export const AddTrip = () => {
             };
             addTrip(newTrip);
             handleClose();
-            // Here you can add logic to handle form submission, such as sending data to a server
-        }
+        },
+    });
+
+    const {
+        errors,
+        touched,
+        values,
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        handleReset,
+        isValid,
+        dirty,
+    } = formik;
+
+    const handleClose = (event?: unknown) => {
+        setIsOpen(false);
+        handleReset(event);
     };
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target;
-        const errors = {
-            tripId: !formValues.tripId,
-            source: !formValues.source,
-            phone: !formValues.phone,
-            transporter: !formValues.transporter,
-            destination: !formValues.destination,
-        };
-        const isValid = !Object.values(errors).some((error) => error);
-        setIsFormValid(isValid);
-        setFormValues({
-            ...formValues,
-            [name]: value,
-        });
-
-        if (name === 'phone') {
-            if (!validatePhone(value)) {
-                setFormErrors({
-                    ...formErrors,
-                    phone: true,
-                });
-            } else {
-                setFormErrors({
-                    ...formErrors,
-                    phone: false,
-                });
-            }
-        }
+    const handleModalOpen = () => {
+        setIsOpen(true);
     };
 
     return (
@@ -192,152 +166,156 @@ export const AddTrip = () => {
                 open={isOpen}
                 onClose={handleClose}
                 aria-labelledby='add-trip-dialog'>
-                <DialogTitle id='add-trip-dialog'>Add Trip</DialogTitle>
-                <IconButton
-                    aria-label='close'
-                    onClick={handleClose}
-                    sx={{
-                        position: 'absolute',
-                        right: 8,
-                        top: 8,
-                        color: (theme) => theme.palette.grey[500],
-                    }}>
-                    <CloseIcon />
-                </IconButton>
-                <DialogContent sx={{ borderRadius: '8px' }}>
-                    <Box
-                        component='form'
+                <form onSubmit={handleSubmit}>
+                    <DialogTitle id='add-trip-dialog'>Add Trip</DialogTitle>
+                    <IconButton
+                        aria-label='close'
+                        onClick={handleClose}
                         sx={{
-                            '& .MuiTextField-root': {
-                                m: 1,
-                                width: fullScreen ? '100%' : '350px',
-                            },
-                            display: 'flex',
-                            flexDirection: fullScreen ? 'column' : 'row',
-                            width: 'fit-content',
-                        }}
-                        noValidate
-                        autoComplete='off'>
-                        <div>
-                            <TextField
-                                required
-                                id='outlined-required'
-                                label='Trip ID'
-                                name='tripId'
-                                onChange={handleChange}
-                                error={formErrors.tripId}
-                                helperText={
-                                    formErrors.tripId
-                                        ? 'Trip ID is required'
-                                        : ''
-                                }
-                            />
-                            <TextField
-                                id='outlined-select-destination'
-                                label='Source'
-                                name='source'
-                                value={formValues.source}
-                                onChange={handleChange}
-                                error={formErrors.source}
-                                helperText={
-                                    formErrors.source
-                                        ? 'Source is required'
-                                        : ''
-                                }
-                                select>
-                                {mockStates.map((option) => (
-                                    <MenuItem key={option} value={option}>
-                                        {option}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                            <TextField
-                                required
-                                id='outlined-required'
-                                label='Phone'
-                                name='phone'
-                                onChange={handleChange}
-                                error={formErrors.phone}
-                                helperText={
-                                    formErrors.phone
-                                        ? 'Phone is required and must of 10 digit'
-                                        : ''
-                                }
-                            />
-                        </div>
-                        <div>
-                            <TextField
-                                id='outlined-select-transporter'
-                                label='Select Transporter'
-                                name='transporter'
-                                value={formValues.transporter}
-                                onChange={handleChange}
-                                error={formErrors.transporter}
-                                helperText={
-                                    formErrors.transporter
-                                        ? 'Transporter is required'
-                                        : ''
-                                }
-                                select>
-                                {deliveryServices.map((option) => (
-                                    <MenuItem
-                                        key={option.value}
-                                        value={option.value}>
-                                        {option.label}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                            <TextField
-                                id='outlined-select-destination'
-                                label='Select Destination'
-                                name='destination'
-                                value={formValues.destination}
-                                onChange={handleChange}
-                                error={formErrors.destination}
-                                helperText={
-                                    formErrors.destination
-                                        ? 'Destination is required'
-                                        : ''
-                                }
-                                select>
-                                {mockStates.map((option) => (
-                                    <MenuItem key={option} value={option}>
-                                        {option}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        </div>
-                    </Box>
-                </DialogContent>
-                <DialogActions
-                    sx={{
-                        flexDirection: fullScreen ? 'column' : 'row',
-                        gap: '8px',
-                        marginLeft: 0,
-                    }}>
-                    <Button
-                        variant='outlined'
-                        sx={{
-                            width: fullScreen ? '100%' : '200px',
-                            borderRadius: '8px',
-                            textTransform: 'none',
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: (theme) => theme.palette.grey[500],
                         }}>
-                        Update Status
-                    </Button>
-                    <Button
-                        variant='contained'
+                        <CloseIcon />
+                    </IconButton>
+                    <DialogContent sx={{ borderRadius: '8px' }}>
+                        <Box
+                            sx={{
+                                '& .MuiTextField-root': {
+                                    m: 1,
+                                    width: fullScreen ? '100%' : '350px',
+                                },
+                                display: 'flex',
+                                flexDirection: fullScreen ? 'column' : 'row',
+                                width: 'fit-content',
+                            }}>
+                            <div>
+                                <TextField
+                                    required
+                                    id='tripId'
+                                    label='Trip ID'
+                                    name='tripId'
+                                    value={values.tripId}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    error={
+                                        touched.tripId && Boolean(errors.tripId)
+                                    }
+                                    helperText={touched.tripId && errors.tripId}
+                                />
+                                <TextField
+                                    id='source'
+                                    label='Source'
+                                    name='source'
+                                    value={values.source}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    error={
+                                        touched.source && Boolean(errors.source)
+                                    }
+                                    helperText={touched.source && errors.source}
+                                    select>
+                                    {mockStates.map((option) => (
+                                        <MenuItem key={option} value={option}>
+                                            {option}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                                <TextField
+                                    required
+                                    id='phone'
+                                    label='Phone'
+                                    name='phone'
+                                    value={values.phone}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    error={
+                                        touched.phone && Boolean(errors.phone)
+                                    }
+                                    helperText={touched.phone && errors.phone}
+                                />
+                            </div>
+                            <div>
+                                <TextField
+                                    id='transporter'
+                                    label='Select Transporter'
+                                    name='transporter'
+                                    value={values.transporter}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    error={
+                                        touched.transporter &&
+                                        Boolean(errors.transporter)
+                                    }
+                                    helperText={
+                                        touched.transporter &&
+                                        errors.transporter
+                                    }
+                                    select>
+                                    {deliveryServices.map((option) => (
+                                        <MenuItem
+                                            key={option.value}
+                                            value={option.value}>
+                                            {option.label}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                                <TextField
+                                    id='destination'
+                                    label='Select Destination'
+                                    name='destination'
+                                    value={values.destination}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    error={
+                                        touched.destination &&
+                                        Boolean(errors.destination)
+                                    }
+                                    helperText={
+                                        touched.destination &&
+                                        errors.destination
+                                    }
+                                    select>
+                                    {mockStates.map((option) => (
+                                        <MenuItem key={option} value={option}>
+                                            {option}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </div>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions
                         sx={{
-                            width: fullScreen ? '100%' : '150px',
-                            borderRadius: '8px',
-                            textTransform: 'none',
-                            fontWeight: '400',
+                            flexDirection: fullScreen ? 'column' : 'row',
+                            gap: '8px',
                             marginLeft: 0,
-                        }}
-                        onClick={handleAddTrip}
-                        disabled={!isFormValid}>
-                        Add Trip
-                    </Button>
-                </DialogActions>
+                        }}>
+                        <Button
+                            variant='outlined'
+                            sx={{
+                                width: fullScreen ? '100%' : '200px',
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                            }}>
+                            Update Status
+                        </Button>
+                        <Button
+                            variant='contained'
+                            sx={{
+                                width: fullScreen ? '100%' : '150px',
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                                fontWeight: '400',
+                                marginLeft: 0,
+                            }}
+                            type='submit'
+                            disabled={!dirty || !isValid}>
+                            Add Trip
+                        </Button>
+                    </DialogActions>
+                </form>
             </BootstrapDialog>
         </>
     );

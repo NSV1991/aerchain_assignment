@@ -1,16 +1,19 @@
 import dayjs from 'dayjs';
-import { Order, Trip } from './types';
+import { Filter, Order, Trip, TripFormattedData } from './types';
+import { CONSTANTS } from './constants';
+
+const { STATUS, TAT_STATUS } = CONSTANTS;
 
 export const findTATStatus = (trip: Trip) => {
-    if (trip.etaDays <= 0) return 'Others';
+    if (trip.etaDays <= 0) return TAT_STATUS.OTHERS;
 
     const start = dayjs(trip.tripStartTime);
     const end = dayjs(trip.tripEndTime || trip.lastPingTime);
 
     const dayDifference = end.diff(start, 'day');
 
-    if (trip.etaDays > dayDifference) return 'Delayed';
-    return 'On time';
+    if (trip.etaDays > dayDifference) return TAT_STATUS.DELAYED;
+    return TAT_STATUS.ON_TIME;
 };
 
 export function stableSort<T>(
@@ -72,3 +75,14 @@ export const getTripStatusColor = (status: string) => {
 
 export const formattedDate = (inputDate: string) =>
     dayjs(inputDate).format('MM/DD/YY, h:mmA');
+
+export const filterDataByStatus = (status: Filter, trips: Trip[]) => {
+    return trips.filter((trip) => trip.currentStatus === STATUS[status]);
+};
+
+export const filterDataByTATStatus = (
+    status: keyof typeof TAT_STATUS,
+    trips: TripFormattedData[]
+) => {
+    return trips.filter((trip) => trip.tatStatus === TAT_STATUS[status]);
+};
