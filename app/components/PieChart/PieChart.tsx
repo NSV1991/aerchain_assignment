@@ -46,7 +46,6 @@ export const PieChart = ({
             sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                marginLeft: '10px',
                 justifyContent: 'center',
                 alignItems: 'center',
             }}>

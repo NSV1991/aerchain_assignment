@@ -1,7 +1,7 @@
 'use client';
 
-import { Box, Chip, Divider, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { Box, Chip, Divider, Typography, useMediaQuery } from '@mui/material';
+import { styled, useTheme } from '@mui/material/styles';
 import { PieChart } from '../PieChart';
 import {
     filterDataByStatus,
@@ -21,6 +21,9 @@ export const Header = () => {
         state: { currentFilter, totalTrips },
         updateFilter,
     } = useAppContext();
+
+    const theme = useTheme();
+    const fullScreen = useMediaQuery(theme.breakpoints.down('lg'));
 
     const tripsCount = totalTrips.length;
 
@@ -59,12 +62,13 @@ export const Header = () => {
                 display: 'flex',
                 width: '100%',
                 margin: '40px 0',
+                flexDirection: fullScreen ? 'column' : 'row',
             }}
             component='section'>
             <Box
                 sx={{
                     display: 'flex',
-                    width: '40%',
+                    width: fullScreen ? '100%' : '40%',
                     justifyContent: 'space-between',
                     margin: '12px 30px 12px 6px',
                     alignItems: 'center',
@@ -74,6 +78,10 @@ export const Header = () => {
                     onClick={() => handleFilterChange('ALL')}
                     sx={{
                         cursor: 'pointer',
+                        borderRadius: '10px',
+                        ':hover': {
+                            background: '#B3D1CF',
+                        },
                         background:
                             currentFilter === 'ALL' ? '#B3D1CF' : 'inherit',
                     }}>
@@ -103,17 +111,22 @@ export const Header = () => {
                     </StyledTypoGraphy>
                 </Box>
             </Box>
-            <Divider
-                orientation='vertical'
-                variant='middle'
-                flexItem
-                color='#E0E0E0'
-                sx={{ width: '1px', marginTop: '35px', marginBottom: '35px' }}
-            />
+            {!fullScreen && (
+                <Divider
+                    orientation='vertical'
+                    variant='middle'
+                    flexItem
+                    color='#E0E0E0'
+                    sx={{
+                        width: '1px',
+                        margin: '35px 10px',
+                    }}
+                />
+            )}
             <Box
                 sx={{
                     display: 'flex',
-                    width: '60%',
+                    width: fullScreen ? '100%' : '60%',
                     justifyContent: 'flex-start',
                     alignItems: 'center',
                 }}>
@@ -123,7 +136,6 @@ export const Header = () => {
                         flexDirection: 'row',
                         alignItems: 'center',
                         width: '40%',
-                        margin: '0 20px',
                         justifyContent: 'space-between',
                     }}>
                     <PieChart
@@ -151,7 +163,7 @@ export const Header = () => {
                     variant='middle'
                     flexItem
                     color='#CC3333'
-                    sx={{ width: '1px' }}
+                    sx={{ width: '1px', margin: '10px' }}
                 />
                 <Box
                     component='div'
@@ -161,8 +173,13 @@ export const Header = () => {
                         alignItems: 'flex-start',
                         width: '30%',
                         cursor: 'pointer',
+                        borderTopLeftRadius: '10px',
+                        borderBottomLeftRadius: '10px',
                         background:
                             currentFilter === 'INT' ? '#B3D1CF' : 'inherit',
+                        ':hover': {
+                            background: '#B3D1CF',
+                        },
                     }}
                     onClick={() => handleFilterChange('INT')}>
                     <StyledTypoGraphy
@@ -192,7 +209,7 @@ export const Header = () => {
                     variant='middle'
                     flexItem
                     color='#E0E0E0'
-                    sx={{ width: '1px' }}
+                    sx={{ width: '1px', margin: '10px' }}
                 />
                 <Box
                     component='div'
@@ -205,6 +222,11 @@ export const Header = () => {
                         cursor: 'pointer',
                         background:
                             currentFilter === 'DEL' ? '#B3D1CF' : 'inherit',
+                        borderTopRightRadius: '10px',
+                        borderBottomRightRadius: '10px',
+                        ':hover': {
+                            background: '#B3D1CF',
+                        },
                     }}>
                     <StyledTypoGraphy
                         variant='subtitle1'
